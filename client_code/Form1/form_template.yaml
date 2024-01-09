@@ -7,8 +7,33 @@ components:
   properties: {col_widths: '{}'}
   name: content_panel
   layout_properties: {slot: default}
-  components: []
+  components:
+  - name: linear_panel_1
+    properties: {}
+    type: LinearPanel
+    layout_properties: {grid_position: 'PDUGDE,NLHFFY'}
+    components:
+    - name: flow_panel_1
+      properties: {align: left}
+      type: FlowPanel
+      components:
+      - name: Schema
+        properties: {align: left, text: Schema}
+        type: Label
+        layout_properties: {}
+      - name: schema_drop_down
+        properties: {align: full}
+        type: DropDown
+        layout_properties: {width: 223}
+      layout_properties: {}
+    - name: rich_text_schema_preview
+      properties: {}
+      type: RichText
 - type: FlowPanel
   properties: {}
   name: navbar_links
   layout_properties: {slot: nav-right}
+- name: label_1
+  properties: {text: Schema manager}
+  type: Label
+  layout_properties: {slot: title}

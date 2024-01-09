@@ -1,12 +1,39 @@
-allow_embedding: false
-package_name: API_Test_2
-name: API Test 2
-startup_form: Form1
-renamed: true
-runtime_options: {version: 2, client_version: '3', server_version: python3-sandbox,
-  server_spec: null}
 dependencies: []
 services:
 - source: /runtime/services/tables.yml
   client_config: {}
   server_config: {}
+package_name: API_Test_2
+allow_embedding: false
+name: API Test 2
+runtime_options: {version: 2, client_version: '3', server_version: python3-sandbox,
+  server_spec: null}
+startup_form: Form1
+db_schema:
+  data_table:
+    client: none
+    server: full
+    columns:
+    - name: name
+      admin_ui: {width: 200, order: 0}
+      type: string
+    - name: data
+      admin_ui: {width: 200, order: 1}
+      type: simpleObject
+    - name: schema
+      admin_ui: {width: 200, order: 2}
+      type: link_single
+      target: schema_table
+    title: data_table
+  schema_table:
+    client: none
+    server: full
+    columns:
+    - name: name
+      admin_ui: {width: 200, order: 0}
+      type: string
+    - name: schema
+      admin_ui: {width: 200, order: 1}
+      type: simpleObject
+    title: schema_table
+renamed: true
