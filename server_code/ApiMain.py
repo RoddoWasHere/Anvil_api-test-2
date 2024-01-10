@@ -160,7 +160,7 @@ def add_data_handler(type_name, **q):
       return anvil.server.HttpResponse(400, "Validation failed")
     
     #save data
-    app_tables.data_table.add_row(name="??", data=new_data, schema=got_schema_row)
+    new_row = app_tables.data_table.add_row(name="??", data=new_data, schema=got_schema_row)
     
 
   
@@ -173,6 +173,7 @@ def add_data_handler(type_name, **q):
   #   got_data["data"] = req_body
   # else:
   #   app_tables.data_table.add_row(name=name, data=req_body)
+  new_data["id"] = new_row.get_id()
   return json.dumps(new_data, indent=2)
 
 @anvil.server.http_endpoint('/delete_data/:id', methods=["DELETE"], enable_cors=True)
