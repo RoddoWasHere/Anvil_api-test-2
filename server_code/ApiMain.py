@@ -45,27 +45,31 @@ def get_schema_key_values(name):
 
 # --- API ----
 
-@anvil.server.http_endpoint('/get_all_by_type/:type_name', methods=["GET"], enable_cors=True)
-def list_data_handler(type_name, **q):
-  got_schema = app_tables.schema_table.get(name=type_name)
-  all_rows = app_tables.data_table.search(schema=got_schema)
-  results = []
+@anvil.server.http_endpoint('/get_all_by_type/:type_name', methods=["POST", "GET"], enable_cors=True)
+def get_all_by_type_handler(type_name, **q):
+  got_schema = DataManagerModel.get_schema_by_name(type_name)
+  if not got_schema:
+    return anvil.server.HttpResponse(400, "No such schema exists")
+  
+  try:
+    query_schema = anvil.server.request.body_json
+  except json.JSONDecodeError:
+    return anvil.server.HttpResponse(400, "Invalid JSON in POST body")
 
-  for row in all_rows:
-    row_tp = row['data']
-    row_tp["id"] = row.get_id()
-    results.append(row_tp)
-  return json.dumps(results)
+  results = DataManagerModel.get_all_by_type(type_name, query_schema)
+  if not results:
+    return None
+  return results
 
 
-@anvil.server.http_endpoint('/get_data/:id', methods=["POST"], enable_cors=True)
+@anvil.server.http_endpoint('/get_data/:id', methods=["POST", "GET"], enable_cors=True)
 def get_data_handler(id, **q):
   try:
     query_schema = anvil.server.request.body_json
   except json.JSONDecodeError:
     return anvil.server.HttpResponse(400, "Invalid JSON in POST body")
 
-  got_data = DataManagerModel.get_data_by_id(id)
+  got_data = DataManagerModel.get_data_by_id(id, query_schema)
 
   if got_data:
     return got_data

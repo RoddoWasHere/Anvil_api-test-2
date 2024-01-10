@@ -73,7 +73,7 @@ shape_type_lookup = {
   "boolean": ShapeTypeBasic(bool),
   "null": ShapeType(lambda value: value is None),
 
-  # "Array": ShapeTypeBasicCompound([list, tuple, range]),
+  # // not implemented
   # "Date": ShapeTypeBasic(datetime),
 }
 
@@ -115,8 +115,10 @@ class SchemaShaper:
     return True
 
   @staticmethod
-  def shape(shape, data, initial_dict={}):
-    result = initial_dict
+  def shape(shape, data, initial_dict=None):
+    result = {}
+    if initial_dict:
+      result = initial_dict
     for key, value in shape.items():
       if key in data:
         result[key] = data[key]
