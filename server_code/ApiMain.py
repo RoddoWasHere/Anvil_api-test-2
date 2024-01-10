@@ -176,7 +176,7 @@ def add_data_handler(type_name, **q):
   new_data["id"] = new_row.get_id()
   return json.dumps(new_data, indent=2)
 
-@anvil.server.http_endpoint('/delete_data/:id', methods=["DELETE"], enable_cors=True)
+@anvil.server.http_endpoint('/delete_data/:id', methods=["POST"], enable_cors=True)
 def delete_data_handler(id, **q):
   data_row = app_tables.data_table.get_by_id(id)
   if data_row:
