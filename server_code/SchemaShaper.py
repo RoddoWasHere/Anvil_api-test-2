@@ -17,6 +17,7 @@ class TypeParseResult:
     self.shape_type = shape_type
     self.is_array = is_array
 
+
 # create schema type parser
 parser_tokens = [
   ParserToken("is_required", re.compile('(!|)'), lambda s, r: (s == '!')),
@@ -24,6 +25,7 @@ parser_tokens = [
   ParserToken("is_array", re.compile('(\[\]|)'), lambda s, r: (s =='[]')), 
 ]
 schema_type_name_parser = LL1Parser(parser_tokens)
+
 
 class ShapeType:
   def __init__(self, validator):
@@ -38,10 +40,13 @@ class ShapeType:
     # shape_type = re.search('\w+', type_string)[0]
     # is_array = False
     res = schema_type_name_parser.parse(type_string)
+    if not res:
+      return None
     is_required = res["is_required"]
     type_name = res["type_name"]
     is_array = res["is_array"]
     return TypeParseResult(is_required, type_name, is_array)
+
 
 class ShapeTypeBasic(ShapeType):
   def __init__(self, shape_type: type):
@@ -61,12 +66,6 @@ class ShapeTypeBasicCompound(ShapeType):
         return True
     return False
 
-  
-# string_type = ShapeType(lambda value: isinstance(value, str))
-string_type = ShapeTypeBasic(str)
-number_type = ShapeTypeBasicCompound([int, float, complex])
-
-
 
 shape_type_lookup = {
   "string": ShapeTypeBasic(str),
@@ -79,15 +78,16 @@ shape_type_lookup = {
 }
 
 
-
-
 class SchemaShaper:
 
   @staticmethod
   def validate(shape: dict, data: dict):
+    # TODO: provide reason for failure
     for key, s_value in shape.items():
       # parse the type syntax
       shape_type_parsed = ShapeType.parse_type(s_value)
+      if shape_type_parsed is None:
+        return False
       
       shape_type_name = shape_type_parsed.shape_type
       shape_type_required = shape_type_parsed.is_required
@@ -116,12 +116,10 @@ class SchemaShaper:
 
   @staticmethod
   def shape(shape, data, initial_dict={}):
-    # skip type validation for now
     result = initial_dict
     for key, value in shape.items():
       if key in data:
         result[key] = data[key]
-
     return result
 
 

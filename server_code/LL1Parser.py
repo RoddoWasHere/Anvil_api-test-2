@@ -13,14 +13,8 @@ class ParserToken:
     self.pattern = pattern
     self.processFn = processFn
 
-parser_tokens = [
-  ParserToken("is_required", re.compile('(!|)'), lambda s, r: (s == '!')),
-  ParserToken("type_name", re.compile('([a-z]|[A-Z])+'), lambda s, r: s),  
-  ParserToken("is_array", re.compile('(\[\]|)'), lambda s, r: (s =='[]')), 
-]
-
 class LL1Parser:
-  parser_tokens
+  parser_tokens: [ParserToken]
   def __init__(self, parser_tokens: [ParserToken]):
     self.parser_tokens = parser_tokens
 
@@ -37,7 +31,6 @@ class LL1Parser:
           result_tp = pt.processFn(got, result)
         else:
           result_tp = got
-        print("--got", got)
         result[pt.name] = result_tp
 
         cur_index = end
@@ -46,9 +39,12 @@ class LL1Parser:
         return None
     return result
 
-# schemaTypeNameParser = LL1Parser(parser_tokens)
-
 def test_parser():
+  parser_tokens = [
+    ParserToken("is_required", re.compile('(!|)'), lambda s, r: (s == '!')),
+    ParserToken("type_name", re.compile('([a-z]|[A-Z])+'), lambda s, r: s),  
+    ParserToken("is_array", re.compile('(\[\]|)'), lambda s, r: (s =='[]')), 
+  ]
   schemaTypeNameParser = LL1Parser(parser_tokens)
   print(schemaTypeNameParser.parse('abc'))
   print(schemaTypeNameParser.parse('!abc[]'))
