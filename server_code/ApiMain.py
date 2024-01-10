@@ -132,7 +132,7 @@ def set_data_handler(id, **q):
 
 
 @anvil.server.http_endpoint('/add_data/:type_name', methods=["POST"], enable_cors=True)
-def set_data_handler(type_name, **q):
+def add_data_handler(type_name, **q):
   # got_data = app_tables.data_table.get_by_id(id)
   # got_data = app_tables.data_table.get_by_id(id)
   # got_schema = got_data["schema"]["schema"]
@@ -172,3 +172,14 @@ def set_data_handler(type_name, **q):
   # else:
   #   app_tables.data_table.add_row(name=name, data=req_body)
   return json.dumps(new_data, indent=2)
+
+@anvil.server.http_endpoint('/delete_data/:id', methods=["DELETE"], enable_cors=True)
+def delete_data_handler(id, **q):
+  data_row = app_tables.data_table.get_by_id(id)
+  if data_row:
+    data_row.delete()
+    return id
+
+  return None
+  
+  
