@@ -161,6 +161,8 @@ def add_data_handler(type_name, **q):
     
     #save data
     app_tables.data_table.add_row(name="??", data=new_data, schema=got_schema_row)
+    
+
   
   else:
     return anvil.server.HttpResponse(400, "No data provided")
