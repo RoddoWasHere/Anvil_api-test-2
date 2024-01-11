@@ -6,6 +6,9 @@ from datetime import datetime
 import re
 from .LL1Parser import *
 
+"""
+SchemaShaper: Designed to validate and shape dict/JSON objects according to a schema
+"""
 
 class TypeParseResult:
   is_required: bool

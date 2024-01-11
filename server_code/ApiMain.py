@@ -7,6 +7,10 @@ import json
 from .SchemaShaper import *
 from .DataManagerModel import *
 
+"""
+Main entry point: form callable and API endpoints (application layer)
+"""
+
 # --- Form callable ----
 
 @anvil.server.callable
