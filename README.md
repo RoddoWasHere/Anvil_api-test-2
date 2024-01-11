@@ -1,14 +1,23 @@
 # Generic Dynamic Strongly Typed API
 
+## Table of contents
+
+ - [Introducion](#introducion)
+    - [How it works:](#how-it-works)
+    - [Shaping data](#shaping-data)
+ - [API Specification](#api-specification)
+    - [Data](#data)
+    - [Schema](#schema)
+
 ## Introducion
 
-This is a repository for an Anvil app which is created and modified using the Anvil app builder on the [Anvil](https://anvil.works/) website.
+This is a repository for an Anvil app which was created and modified using the Anvil app builder on the [Anvil](https://anvil.works/) website.
 
-This is an API which allows for CRUD operations of dynamic data. The data is strongly typed. The structure of the data is specified by a dynamic schema. Both the 'data' and 'schema' is stored in the database.
+This is an API that allows for CRUD operations of dynamic data. The data is strongly typed. The structure of the data is specified by a dynamic schema. Both the 'data' and 'schema' are stored in the database.
 
 ### How it works:
 
-The data structure for a particular structure type is specified by a "schema". The data is a JSON object. The schema is also specified by a JSON object.
+The data structure for a particular structure type is specified by a "schema". The data is a JSON object. A JSON object also specifies the schema.
 
 Here's an example of a "schema" object representing a "todo list":
 
@@ -16,7 +25,7 @@ Here's an example of a "schema" object representing a "todo list":
 {
     "name": "!string",
     "listItemIds": "!number[]",
-    "desciption": "string",
+    "description": "string",
 }
 ```
 The `key` here represents the name of the field and the `value` represents the data type.
@@ -39,21 +48,21 @@ An acceptable data object which conforms to this schema might look like this:
 }
 ```
 
-*Here can omit the `description` as it is not required.*__*
+*Here we can omit the `description` as it is not required.*
 
 ### Shaping data
 
 #### Reading data
 
-for retrieving data, a JSON POST body can optionally be included in the request. Here you can specify only the fields you wish to be returned. This can help reduce the payload.
+For retrieving data, a JSON POST body can optionally be included in the request. Here we can specify only the fields we wish to be returned. This can help reduce the payload.
 
 example:
 ```JSON
 {
-    "name": "", // the value of the field here can anything here 
+    "name": "", // the value of the field here can be anything here 
 }
 ```
-*The value speficied for a given field makes no different. The API only checks if the key exists.*
+*The value specified for a given field makes no difference. The API only checks if the key exists.*
 
 #### Writing data
 
@@ -216,4 +225,4 @@ __Response:__
 
 ### Schema
 
-There are no API endpoints for "schema".
+There are currently no API endpoints for "schema".
