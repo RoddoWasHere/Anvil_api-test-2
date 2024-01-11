@@ -5,6 +5,11 @@ import anvil.server
 import json
 from .SchemaShaper import *
 
+"""
+DataManagerModel: A Model for managing "data" stored in the "data" table
+and it's corresponding schema in the schema table.
+"""
+
 class DataManagerModel:  
   
   @staticmethod

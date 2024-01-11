@@ -4,6 +4,10 @@ from anvil.tables import app_tables
 import re
 from typing import Callable
 
+"""
+LL1Parser: Very simple LL1 parser
+"""
+
 class ParserToken:
   # pattern:
   processFn: Callable[[str], dict]
