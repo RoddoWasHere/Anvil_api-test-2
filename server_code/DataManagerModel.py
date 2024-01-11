@@ -15,21 +15,43 @@ class DataManagerModel:
     return got_schema_row["schema"]
   
   @staticmethod
+  def get_all_by_type(schema_name: str, query_schema: dict = None):
+    got_schema_row = app_tables.schema_table.get(name=schema_name)
+    all_rows = app_tables.data_table.search(schema=got_schema_row)
+    got_schema = got_schema_row["schema"]
+    results = []
+
+    for row in all_rows:
+      row_tp = row['data']
+      row_tp["id"] = row.get_id()
+      results.append(row_tp)
+
+    if query_schema:
+      # clean the query schema
+      cleaned_schema = SchemaShaper.shape(got_schema, query_schema)
+      # shape the data
+      shaped_results = []
+      for data_tp in results:
+        shaped_results.append(SchemaShaper.shape(cleaned_schema, data_tp))
+      results = shaped_results
+    
+    return json.dumps(results)
+  
+  @staticmethod
   def get_data_by_id(id: str, query_schema: dict = None):
     got_data = app_tables.data_table.get_by_id(id)
     if not got_data:
       return None
     got_schema = got_data["schema"]['schema']
   
-    if got_data is not None:
-      if query_schema:
-        # clean the query schema
-        cleaned_schema = SchemaShaper.shape(got_schema, query_schema)
-        # shape the data
-        result_shaped = SchemaShaper.shape(cleaned_schema, got_data["data"])
-        return json.dumps(result_shaped, indent=2)
-      else:
-        return json.dumps(got_data["data"], indent=2)
+    if query_schema:
+      # clean the query schema
+      cleaned_schema = SchemaShaper.shape(got_schema, query_schema)
+      # shape the data
+      result_shaped = SchemaShaper.shape(cleaned_schema, got_data["data"])
+      return json.dumps(result_shaped, indent=2)
+    else:
+      return json.dumps(got_data["data"], indent=2)
     
     return got_data
   
@@ -56,7 +78,7 @@ class DataManagerModel:
     new_data = {}
     got_schema_row = app_tables.schema_table.get(name=schema_name)
     if not got_schema_row:
-      return anvil.server.HttpResponse(400, "No such schema exists")\
+      return anvil.server.HttpResponse(400, "No such schema exists")
       
     got_schema = got_schema_row["schema"]
     
