@@ -1,4 +1,4 @@
-# About this API
+# Generic Dynamic Strongly Typed API
 
 ## Introducion
 
@@ -59,9 +59,11 @@ example:
 
 When writing data, only the keys in the JSON POST object specified will be changed.
 
-# API Specification
+## API Specification
 
 ### Data
+
+*Note: All data objects returned from the API include their database `id` in the "id" field.*
 
 #### Read
 ***
@@ -211,3 +213,7 @@ __Response:__
 </details>
 
 ***
+
+### Schema
+
+There are no API endpoints for "schema".
