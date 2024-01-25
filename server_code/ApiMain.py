@@ -7,6 +7,9 @@ from anvil.http import HttpError
 import json
 from .SchemaShaper import *
 from .DataManagerModel import *
+# import hashlib
+import bcrypt
+from datetime import datetime
 
 """
 Main entry point: form callable and API endpoints (application layer)
@@ -48,17 +51,29 @@ def get_schema_key_values(name):
   return results
 
 
-# --- SCHEMA API ----
+# --- AUTH API ----
 
-@anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
-def schemas_handler(**q):
-  user = anvil.users.get_user();
-  return f'{anvil.server.session.get("authenticated")}'
-  if user:
-    return anvil.server.HttpResponse(200, "Logged in")
-  else:
-    return anvil.server.HttpResponse(401, "Unauthorized")
+class AuthService:
+  @staticmethod
+  def generate_new_token(user_id: str) -> str:
+    d_secs = datetime.now().timestamp()
+    enc_string = f"{user_id}:{d_secs}"
+    token_tp = bcrypt.hashpw(enc_string.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    return token_tp
 
+  @staticmethod
+  def get_user_from_token(token = None):
+    use_token = token
+    if not token:
+      use_token = anvil.server.request.headers.get("authorization")
+      print("got header auth token?", use_token)
+    if use_token:
+      got_session = app_tables.user_sessions.get(token=use_token)
+      if got_session:
+        user = got_session["user"]
+        return user
+    return None
+  
 @anvil.server.http_endpoint('/logout', methods=["GET"], enable_cors=True)
 def logout_handler(**q):
   user = anvil.users.logout()
@@ -66,6 +81,10 @@ def logout_handler(**q):
 
 @anvil.server.http_endpoint('/login', methods=["POST"], enable_cors=True)
 def login_handler(**q):
+  user = AuthService.get_user_from_token()
+  if user:
+    return anvil.server.HttpResponse(200, "Already logged in")
+    
   try:
     req_body = anvil.server.request.body_json
   except json.JSONDecodeError:
@@ -74,15 +93,27 @@ def login_handler(**q):
   if req_body["email"] and req_body["password"]:
     password = req_body["password"]
     email = req_body["email"]
-    try:
-      user = anvil.users.login_with_email(email, password)
-      anvil.server.session["authenticated"] = True
-      return anvil.server.HttpResponse(200, "Success")
-    except AuthenticationFailed:
-      return anvil.server.HttpResponse(401, "Unauthorized")
-    
+    user = anvil.users.login_with_email(email, password) # ??
+    if user:
+      token_tp = AuthService.generate_new_token(user.get_id())
+      app_tables.user_sessions.add_row(token=token_tp, user=user)
+      return {"token": token_tp}
   return anvil.server.HttpResponse(401, "Unauthorized")
-  # anvil.server.session["authenticated"] = True
+
+# --- SCHEMA API ----
+
+@anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
+def schemas_handler(**q):
+  user = AuthService.get_user_from_token()
+  
+  if user:
+    schemas = app_tables.schema_table.client_writable(owner=user)
+    # TODO: formalize
+    result = map(lambda s: {"schema": s["schema"], "name": s["name"], "id": s.get_id()}, schemas.search())
+    print(result)
+    return list(result)
+  
+  return anvil.server.HttpResponse(401, "Unauthorized")
 
 # --- DATA API ----
 
