@@ -51,13 +51,18 @@ def get_schema_key_values(name):
 # --- SCHEMA API ----
 
 @anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
-def schema_handler(**q):
+def schemas_handler(**q):
   user = anvil.users.get_user();
-  return user
+  return f'{anvil.server.session.get("authenticated")}'
+  if user:
+    return anvil.server.HttpResponse(200, "Logged in")
+  else:
+    return anvil.server.HttpResponse(401, "Unauthorized")
 
 @anvil.server.http_endpoint('/logout', methods=["GET"], enable_cors=True)
 def logout_handler(**q):
   user = anvil.users.logout()
+  anvil.server.session["authenticated"] = False
 
 @anvil.server.http_endpoint('/login', methods=["POST"], enable_cors=True)
 def login_handler(**q):
@@ -71,6 +76,7 @@ def login_handler(**q):
     email = req_body["email"]
     try:
       user = anvil.users.login_with_email(email, password)
+      anvil.server.session["authenticated"] = True
       return anvil.server.HttpResponse(200, "Success")
     except AuthenticationFailed:
       return anvil.server.HttpResponse(401, "Unauthorized")
