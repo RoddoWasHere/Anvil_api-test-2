@@ -105,15 +105,52 @@ def login_handler(**q):
 @anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
 def schemas_handler(**q):
   user = AuthService.get_user_from_token()
-  
   if user:
     schemas = app_tables.schema_table.client_writable(owner=user)
     # TODO: formalize
     result = map(lambda s: {"schema": s["schema"], "name": s["name"], "id": s.get_id()}, schemas.search())
     print(result)
     return list(result)
-  
   return anvil.server.HttpResponse(401, "Unauthorized")
+
+@anvil.server.http_endpoint('/set_schema', methods=["POST"], enable_cors=True)
+def set_schema_handler(**q):
+  user = AuthService.get_user_from_token()
+  if not user:
+    return anvil.server.HttpResponse(401, "Unauthorized")
+    
+  schemas = app_tables.schema_table.client_writable(owner=user)
+  
+  # TODO: validate...
+  try:
+    query_schema = anvil.server.request.body_json
+  except json.JSONDecodeError:
+    return anvil.server.HttpResponse(400, "Invalid JSON in POST body")
+    
+  if query_schema.get("id"):
+    updated_schema = schemas.get_by_id(query_schema["id"]);
+    if not updated_schema:
+      return anvil.server.HttpResponse(404, "No such schema with id")
+    if query_schema.get("name"):
+      updated_schema["name"] = query_schema["name"]
+    if query_schema.get("schema"):
+      updated_schema["schema"] = query_schema["schema"]
+    return {
+      "id": updated_schema.get_id(),
+      "name": updated_schema["name"],
+      "schema": updated_schema["schema"],
+    }
+  else:
+    if not query_schema.get("name") or not query_schema.get("schema"):
+      return anvil.server.HttpResponse(400, "Invalid data in POST body")
+    
+    new_schema = schemas.add_row(name = query_schema["name"], schema = query_schema["schema"])
+    return {
+      "id": new_schema.get_id(),
+      "name": new_schema["name"],
+      "schema": new_schema["schema"],
+    }
+  
 
 # --- DATA API ----
 
