@@ -1,3 +1,4 @@
+import anvil.users
 import anvil.tables as tables
 import anvil.tables.query as q
 from anvil.tables import app_tables
@@ -47,7 +48,37 @@ def get_schema_key_values(name):
   return results
 
 
-# --- API ----
+# --- SCHEMA API ----
+
+@anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
+def schema_handler(**q):
+  user = anvil.users.get_user();
+  return user
+
+@anvil.server.http_endpoint('/logout', methods=["GET"], enable_cors=True)
+def logout_handler(**q):
+  user = anvil.users.logout()
+
+@anvil.server.http_endpoint('/login', methods=["POST"], enable_cors=True)
+def login_handler(**q):
+  try:
+    req_body = anvil.server.request.body_json
+  except json.JSONDecodeError:
+    return anvil.server.HttpResponse(400, "Invalid JSON in POST body")
+  
+  if req_body["email"] and req_body["password"]:
+    password = req_body["password"]
+    email = req_body["email"]
+    try:
+      user = anvil.users.login_with_email(email, password)
+      return anvil.server.HttpResponse(200, "Success")
+    except AuthenticationFailed:
+      return anvil.server.HttpResponse(401, "Unauthorized")
+    
+  return anvil.server.HttpResponse(401, "Unauthorized")
+  # anvil.server.session["authenticated"] = True
+
+# --- DATA API ----
 
 @anvil.server.http_endpoint('/get_all_by_type/:type_name', methods=["POST", "GET"], enable_cors=True)
 def get_all_by_type_handler(type_name, **q):
