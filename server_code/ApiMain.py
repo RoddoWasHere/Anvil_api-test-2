@@ -122,6 +122,9 @@ def set_schema_handler(**q):
   schemas = app_tables.schema_table.client_writable(owner=user)
   
   # TODO: validate...
+  
+
+  
   try:
     query_schema = anvil.server.request.body_json
   except json.JSONDecodeError:
@@ -129,6 +132,15 @@ def set_schema_handler(**q):
     
   if query_schema.get("id"):
     updated_schema = schemas.get_by_id(query_schema["id"]);
+
+    # Validation: can't modify schema with deps:
+    got_schemas_data = app_tables.data_table.search(schema=updated_schema)
+    # got_schemas_data = DataManagerModel.get_all_by_type(updated_schema["name"]) #, query_schema)
+    print("got_schemas_data", got_schemas_data, len(got_schemas_data))
+    
+    if got_schemas_data and len(got_schemas_data) > 0:
+      return anvil.server.HttpResponse(400, "Cannot change a schema that has linked data")
+    
     if not updated_schema:
       return anvil.server.HttpResponse(404, "No such schema with id")
     if query_schema.get("name"):
