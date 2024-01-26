@@ -100,18 +100,28 @@ def login_handler(**q):
       return {"token": token_tp}
   return anvil.server.HttpResponse(401, "Unauthorized")
 
+@anvil.server.http_endpoint('/user_data', methods=["GET"], enable_cors=True)
+def user_data_handler(**q):
+  user = AuthService.get_user_from_token()
+  if not user:
+    return anvil.server.HttpResponse(401, "Unauthorized")
+    
+  return {"email": user["email"]};
+
 # --- SCHEMA API ----
 
 @anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
 def schemas_handler(**q):
   user = AuthService.get_user_from_token()
-  if user:
-    schemas = app_tables.schema_table.client_writable(owner=user)
-    # TODO: formalize
-    result = map(lambda s: {"schema": s["schema"], "name": s["name"], "id": s.get_id()}, schemas.search())
-    print(result)
-    return list(result)
-  return anvil.server.HttpResponse(401, "Unauthorized")
+  if not user:
+    return anvil.server.HttpResponse(401, "Unauthorized")
+    
+  schemas = app_tables.schema_table.client_writable(owner=user)
+  # TODO: formalize
+  result = map(lambda s: {"schema": s["schema"], "name": s["name"], "id": s.get_id()}, schemas.search())
+  print(result)
+  return list(result)
+
 
 @anvil.server.http_endpoint('/set_schema', methods=["POST"], enable_cors=True)
 def set_schema_handler(**q):
