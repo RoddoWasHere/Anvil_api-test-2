@@ -62,6 +62,17 @@ class AuthService:
     return token_tp
 
   @staticmethod
+  def get_session_from_token(token = None):
+    use_token = token
+    if not token:
+      use_token = anvil.server.request.headers.get("authorization")
+      print("got header auth token?", use_token)
+    if use_token:
+      got_session = app_tables.user_sessions.get(token=use_token)
+      return got_session
+    return None
+  
+  @staticmethod
   def get_user_from_token(token = None):
     use_token = token
     if not token:
@@ -76,8 +87,16 @@ class AuthService:
   
 @anvil.server.http_endpoint('/logout', methods=["GET"], enable_cors=True)
 def logout_handler(**q):
-  user = anvil.users.logout()
-  anvil.server.session["authenticated"] = False
+  user = AuthService.get_user_from_token()
+  if not user:
+    return anvil.server.HttpResponse(200, "already logged out")
+
+  got_session = AuthService.get_session_from_token()
+  got_session.delete()
+
+  return anvil.server.HttpResponse(200, "Logged out successfully")
+  # user = anvil.users.logout()
+  # anvil.server.session["authenticated"] = False
 
 @anvil.server.http_endpoint('/login', methods=["POST"], enable_cors=True)
 def login_handler(**q):
