@@ -51,9 +51,54 @@ def get_schema_key_values(name):
   return results
 
 
-# --- AUTH API ----
+# --- AUTHORIZATION ----
 
-class AuthService:
+class AuthorizationService:
+  
+  @staticmethod
+  def get_all_user_permissions():
+    user = AuthenticationService.get_user_from_token()
+    if not user:
+      return anvil.server.HttpResponse(401, "Unauthorized")
+
+    print("permissions user?", user["role"])
+    if not user["role"] or not user["role"]["permissions"]:
+      return []
+    permissions = user["role"]["permissions"]
+    if not permissions:
+      return []
+    results = []
+    for perm in permissions:
+      tp = dict(perm)
+      tp["id"] = perm.get_id()
+      results.append(tp)
+    return results
+  
+  @staticmethod
+  def has_permission(permission_name: str):
+    user = AuthenticationService.get_user_from_token()
+    if not user:
+      return anvil.server.HttpResponse(401, "Unauthorized")
+      
+    if not user["role"] or not user["role"]["permissions"]:
+      return []
+    permissions = user["role"]["permissions"]
+    if not permissions:
+      return false
+
+    for perm in permissions:
+      if perm["name"] == permission_name:
+        return true
+    return false    
+
+@anvil.server.http_endpoint('/permissions', methods=["GET"], enable_cors=True)
+def get_permissions_handler(**q):
+  permissions = AuthorizationService.get_all_user_permissions();
+  return permissions
+
+# --- AUTHENTICATION ----
+
+class AuthenticationService:
   @staticmethod
   def generate_new_token(user_id: str) -> str:
     d_secs = datetime.now().timestamp()
@@ -87,11 +132,11 @@ class AuthService:
   
 @anvil.server.http_endpoint('/logout', methods=["GET"], enable_cors=True)
 def logout_handler(**q):
-  user = AuthService.get_user_from_token()
+  user = AuthenticationService.get_user_from_token()
   if not user:
     return anvil.server.HttpResponse(200, "already logged out")
 
-  got_session = AuthService.get_session_from_token()
+  got_session = AuthenticationService.get_session_from_token()
   got_session.delete()
 
   return anvil.server.HttpResponse(200, "Logged out successfully")
@@ -100,7 +145,7 @@ def logout_handler(**q):
 
 @anvil.server.http_endpoint('/login', methods=["POST"], enable_cors=True)
 def login_handler(**q):
-  user = AuthService.get_user_from_token()
+  user = AuthenticationService.get_user_from_token()
   if user:
     return anvil.server.HttpResponse(200, "Already logged in")
     
@@ -114,14 +159,14 @@ def login_handler(**q):
     email = req_body["email"]
     user = anvil.users.login_with_email(email, password) # ??
     if user:
-      token_tp = AuthService.generate_new_token(user.get_id())
+      token_tp = AuthenticationService.generate_new_token(user.get_id())
       app_tables.user_sessions.add_row(token=token_tp, user=user)
       return {"token": token_tp}
   return anvil.server.HttpResponse(401, "Unauthorized")
 
 @anvil.server.http_endpoint('/user_data', methods=["GET"], enable_cors=True)
 def user_data_handler(**q):
-  user = AuthService.get_user_from_token()
+  user = AuthenticationService.get_user_from_token()
   if not user:
     return anvil.server.HttpResponse(401, "Unauthorized")
     
@@ -131,7 +176,7 @@ def user_data_handler(**q):
 
 @anvil.server.http_endpoint('/schemas', methods=["GET"], enable_cors=True)
 def schemas_handler(**q):
-  user = AuthService.get_user_from_token()
+  user = AuthenticationService.get_user_from_token()
   if not user:
     return anvil.server.HttpResponse(401, "Unauthorized")
     
@@ -144,7 +189,7 @@ def schemas_handler(**q):
 
 @anvil.server.http_endpoint('/set_schema', methods=["POST"], enable_cors=True)
 def set_schema_handler(**q):
-  user = AuthService.get_user_from_token()
+  user = AuthenticationService.get_user_from_token()
   if not user:
     return anvil.server.HttpResponse(401, "Unauthorized")
     

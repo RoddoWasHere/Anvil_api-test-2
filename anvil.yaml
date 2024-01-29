@@ -5,7 +5,7 @@ services:
   server_config: {}
 - source: /runtime/services/anvil/users.yml
   client_config: {allow_signup: true, enable_automatically: true, use_email: true,
-    confirm_email: true, allow_remember_me: false, remember_me_days: 30}
+    confirm_email: false, allow_remember_me: false, remember_me_days: 30}
   server_config: {user_table: users}
 package_name: API_Test_2
 allow_embedding: false
@@ -28,6 +28,10 @@ db_schema:
       admin_ui: {width: 200, order: 2}
       type: link_single
       target: schema_table
+    - name: owner
+      admin_ui: {width: 200, order: 3}
+      type: link_single
+      target: users
     title: data_table
   schema_table:
     client: none
@@ -101,6 +105,18 @@ db_schema:
       admin_ui: {width: 200}
       type: string
     - name: permissions
-      admin_ui: {width: 200}
-      type: simpleObject
+      admin_ui: {width: 200, order: 1}
+      type: link_multiple
+      target: permissions
+  permissions:
+    client: none
+    server: full
+    columns:
+    - name: name
+      admin_ui: {width: 200, order: 0}
+      type: string
+    - name: description
+      admin_ui: {order: 1, width: 200}
+      type: string
+    title: permissions
 renamed: true
