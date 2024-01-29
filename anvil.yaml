@@ -39,6 +39,10 @@ db_schema:
     - name: schema
       admin_ui: {order: 1, width: 499}
       type: simpleObject
+    - name: owner
+      admin_ui: {width: 200}
+      type: link_single
+      target: users
     title: schema_table
   users:
     client: none
@@ -68,10 +72,35 @@ db_schema:
     - name: signed_up
       admin_ui: {order: 7, width: 200}
       type: datetime
+    - name: email_confirmation_key
+      admin_ui: {width: 200}
+      type: string
+    - name: role
+      admin_ui: {width: 200}
+      type: link_single
+      target: user_roles
     title: Users
-  table_4:
+  user_sessions:
+    title: user_sessions
     client: none
     server: full
-    columns: []
-    title: Table 4
+    columns:
+    - name: token
+      admin_ui: {width: 640}
+      type: string
+    - name: user
+      admin_ui: {width: 200}
+      type: link_single
+      target: users
+  user_roles:
+    title: user_roles
+    client: none
+    server: full
+    columns:
+    - name: role_name
+      admin_ui: {width: 200}
+      type: string
+    - name: permissions
+      admin_ui: {width: 200}
+      type: simpleObject
 renamed: true
