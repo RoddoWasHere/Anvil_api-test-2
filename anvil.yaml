@@ -41,10 +41,10 @@ db_schema:
       admin_ui: {width: 200, order: 0}
       type: string
     - name: schema
-      admin_ui: {order: 1, width: 499}
+      admin_ui: {order: 1, width: 222}
       type: simpleObject
     - name: owner
-      admin_ui: {width: 200}
+      admin_ui: {order: 2, width: 229}
       type: link_single
       target: users
     title: schema_table
